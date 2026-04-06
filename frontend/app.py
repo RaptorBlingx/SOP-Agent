@@ -10,6 +10,7 @@ Streamlit frontend with 4 phases:
 from __future__ import annotations
 
 import streamlit as st
+from frontend.utils.api_client import DEFAULT_API_URL
 
 st.set_page_config(
     page_title="SOP Agent Console",
@@ -23,7 +24,7 @@ with st.sidebar:
     st.title("📋 SOP Agent")
     st.caption("v1.2.0 — AI-powered SOP Execution")
 
-    api_url = st.text_input("API URL", value="http://localhost:8000", key="api_url")
+    api_url = st.text_input("API URL", value=DEFAULT_API_URL, key="api_url")
     st.divider()
 
     # Backend health check

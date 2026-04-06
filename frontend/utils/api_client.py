@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import httpx
 from typing import Any, AsyncGenerator
 
-# Default backend URL
-DEFAULT_API_URL = "http://localhost:8000"
+# Default backend URL — override via BACKEND_URL env var for Codespaces/remote deployments
+DEFAULT_API_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
 
 
 def get_api_url() -> str:
