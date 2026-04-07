@@ -87,14 +87,14 @@ def get_embedding_model():
     if provider == "gemini":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
         return GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004",
+            model=settings.gemini_embed_model,
             google_api_key=settings.gemini_api_key,
         )
 
     elif provider == "openai":
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(
-            model="text-embedding-3-small",
+            model=settings.openai_embed_model,
             api_key=settings.openai_api_key,
         )
 

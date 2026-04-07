@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import chromadb
@@ -12,6 +13,27 @@ from app.core.logging import get_logger
 logger = get_logger("retrieval.dense")
 
 _client: chromadb.ClientAPI | None = None
+
+
+def _sanitize_metadata_value(value: Any) -> Any:
+    """Convert metadata values to Chroma-compatible scalar types."""
+    if value is None:
+        return ""
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, list):
+        return json.dumps(value, ensure_ascii=True)
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=True, sort_keys=True)
+    return str(value)
+
+
+def _sanitize_metadatas(metadatas: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Normalize all metadata dicts before sending them to ChromaDB."""
+    return [
+        {key: _sanitize_metadata_value(value) for key, value in metadata.items()}
+        for metadata in metadatas
+    ]
 
 
 def get_chroma_client() -> chromadb.ClientAPI:
@@ -52,11 +74,12 @@ def chroma_add(
 ) -> None:
     """Add documents with embeddings to a ChromaDB collection."""
     collection = get_or_create_collection(collection_id)
+    safe_metadatas = _sanitize_metadatas(metadatas)
     collection.add(
         ids=ids,
         embeddings=embeddings,
         documents=documents,
-        metadatas=metadatas,
+        metadatas=safe_metadatas,
     )
 
 

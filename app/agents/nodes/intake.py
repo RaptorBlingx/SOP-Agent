@@ -59,7 +59,7 @@ async def intake_node(state: AgentState) -> dict:
             collection_id=state.collection_id,
             reasoning_profile=state.reasoning_profile,
             model_provider=settings.model_provider,
-            model_name=settings.gemini_model if settings.model_provider == "gemini" else settings.openai_model,
+            model_name=settings.active_model_name,
         )
 
     await db.add_run_event(state.session_id, "intake_complete", {"action": "plan"})

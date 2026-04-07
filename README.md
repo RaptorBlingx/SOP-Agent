@@ -214,6 +214,8 @@ Edit `.env` with your API key. For the fastest start with Google Gemini:
 MODEL_PROVIDER=gemini
 EMBEDDING_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_EMBED_MODEL=models/gemini-embedding-2-preview
 ```
 
 Or use a local Ollama instance (no API key needed):
@@ -222,7 +224,7 @@ Or use a local Ollama instance (no API key needed):
 MODEL_PROVIDER=ollama
 EMBEDDING_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:4b
+OLLAMA_MODEL=qwen3:8b
 OLLAMA_EMBED_MODEL=nomic-embed-text
 ```
 
@@ -259,13 +261,14 @@ All configuration is driven by environment variables (loaded from `.env`):
 | `MODEL_PROVIDER` | `gemini` | LLM provider: `gemini`, `openai`, `anthropic`, `ollama` |
 | `EMBEDDING_PROVIDER` | `gemini` | Embedding provider: `gemini`, `openai`, `ollama` |
 | `GEMINI_API_KEY` | — | Google Gemini API key |
-| `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model name |
+| `GEMINI_MODEL` | `gemini-3-flash-preview` | Gemini chat model name |
+| `GEMINI_EMBED_MODEL` | `models/gemini-embedding-2-preview` | Gemini embedding model name |
 | `OPENAI_API_KEY` | — | OpenAI API key |
-| `OPENAI_MODEL` | `gpt-4o` | OpenAI model name |
+| `OPENAI_MODEL` | `gpt-5.4-mini` | OpenAI chat model name |
 | `ANTHROPIC_API_KEY` | — | Anthropic API key |
-| `ANTHROPIC_MODEL` | `claude-sonnet-4-20250514` | Anthropic model name |
+| `ANTHROPIC_MODEL` | `claude-sonnet-4-6` | Anthropic chat model name |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
-| `OLLAMA_MODEL` | `qwen3:4b` | Ollama chat model |
+| `OLLAMA_MODEL` | `qwen3:8b` | Ollama chat model |
 | `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Ollama embedding model |
 | `DATABASE_PATH` | `./data/sop_agent.db` | SQLite database file path |
 | `CHROMADB_PATH` | `./data/chromadb` | ChromaDB persistence directory |

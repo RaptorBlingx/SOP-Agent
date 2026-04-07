@@ -256,7 +256,8 @@ See [README.md](../README.md#configuration) for the full configuration table.
 MODEL_PROVIDER=gemini
 EMBEDDING_PROVIDER=gemini
 GEMINI_API_KEY=your-key-here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_EMBED_MODEL=models/gemini-embedding-2-preview
 ```
 
 #### OpenAI
@@ -264,7 +265,7 @@ GEMINI_MODEL=gemini-2.5-flash
 MODEL_PROVIDER=openai
 EMBEDDING_PROVIDER=openai
 OPENAI_API_KEY=your-key-here
-OPENAI_MODEL=gpt-4o
+OPENAI_MODEL=gpt-5.4-mini
 ```
 
 #### Anthropic
@@ -273,7 +274,7 @@ MODEL_PROVIDER=anthropic
 EMBEDDING_PROVIDER=openai          # Anthropic doesn't provide embeddings
 OPENAI_API_KEY=your-openai-key     # Needed for embeddings
 ANTHROPIC_API_KEY=your-key-here
-ANTHROPIC_MODEL=claude-sonnet-4-20250514
+ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 
 #### Ollama (Local, No API Key)
@@ -281,14 +282,14 @@ ANTHROPIC_MODEL=claude-sonnet-4-20250514
 MODEL_PROVIDER=ollama
 EMBEDDING_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:4b
+OLLAMA_MODEL=qwen3:8b
 OLLAMA_EMBED_MODEL=nomic-embed-text
 ```
 
 Ensure Ollama is running and models are pulled:
 ```bash
 ollama serve &
-ollama pull qwen3:4b
+ollama pull qwen3:8b
 ollama pull nomic-embed-text
 ```
 

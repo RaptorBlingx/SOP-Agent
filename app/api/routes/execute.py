@@ -63,10 +63,21 @@ async def start_execution(request: ExecuteRequest) -> ExecuteResponse:
 async def _run_graph(session_id: str, task_description: str, queue: asyncio.Queue) -> None:
     """Execute the agent graph and push events to the SSE queue."""
     try:
+        from app.core.config import get_settings
+
+        settings = get_settings()
         graph = build_graph()
 
         # Load session to get collection_id and current state
         session = await db.get_session(session_id)
+        if session:
+            await db.update_session(
+                session_id,
+                task_description=task_description,
+                model_provider=settings.model_provider,
+                model_name=settings.active_model_name,
+            )
+            session = await db.get_session(session_id)
         collection_id = session.get("collection_id", f"sop_{session_id}") if session else f"sop_{session_id}"
         existing_steps = await db.get_steps(session_id) if session else []
 

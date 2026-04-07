@@ -19,19 +19,21 @@ class Settings(BaseSettings):
 
     # --- Gemini ---
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3-flash-preview"
+    gemini_embed_model: str = "models/gemini-embedding-2-preview"
 
     # --- OpenAI ---
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o"
+    openai_model: str = "gpt-5.4-mini"
+    openai_embed_model: str = "text-embedding-3-small"
 
     # --- Anthropic ---
     anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-4-20250514"
+    anthropic_model: str = "claude-sonnet-4-6"
 
     # --- Ollama ---
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen3:4b"
+    ollama_model: str = "qwen3:8b"
     ollama_embed_model: str = "nomic-embed-text"
 
     # --- Feature Flags ---
@@ -80,6 +82,23 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def active_model_name(self) -> str:
+        provider = self.model_provider.lower()
+        if provider == "gemini":
+            return self.gemini_model
+        if provider == "openai":
+            return self.openai_model
+        if provider == "anthropic":
+            return self.anthropic_model
+        if provider == "ollama":
+            return self.ollama_model
+        raise ValueError(f"Unsupported MODEL_PROVIDER: {self.model_provider}")
+
+    @property
+    def default_reasoning_profile(self) -> str:
+        return "local" if self.model_provider.lower() == "ollama" else "balanced"
 
     def ensure_directories(self) -> None:
         """Create data directories if they don't exist."""

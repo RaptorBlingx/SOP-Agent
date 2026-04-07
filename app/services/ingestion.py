@@ -201,6 +201,25 @@ async def ingest_files(
         Dict with session_id, collection_id, total_chunks, files_processed.
     """
     collection_id = collection_id or f"sop_{session_id}"
+    settings = get_settings()
+
+    session = await db.get_session(session_id)
+    if session is None:
+        await db.create_session(
+            session_id=session_id,
+            task_description="Pending task description",
+            collection_id=collection_id,
+            reasoning_profile=settings.default_reasoning_profile,
+            model_provider=settings.model_provider,
+            model_name=settings.active_model_name,
+        )
+    elif session.get("collection_id") != collection_id:
+        await db.update_session(
+            session_id,
+            collection_id=collection_id,
+            model_provider=settings.model_provider,
+            model_name=settings.active_model_name,
+        )
 
     # Ensure collection exists
     get_or_create_collection(collection_id)
