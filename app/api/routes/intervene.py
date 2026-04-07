@@ -5,8 +5,11 @@ Operator sends approval/override/skip/abort/replan actions.
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 
+from app.api.routes.execute import _enqueue_run
 from app.api.schemas import InterventionRequest, InterventionResponse
 from app.core import database as db
 from app.core.logging import get_logger
@@ -16,6 +19,25 @@ logger = get_logger("api.intervene")
 router = APIRouter(prefix="/api/v1")
 
 VALID_ACTIONS = {"approve", "override", "skip", "abort", "request_replan"}
+
+
+async def _get_pending_step(session_id: str) -> dict[str, Any] | None:
+    steps = await db.get_steps(session_id)
+    for step in reversed(steps):
+        if step.get("status") == "needs_approval" and step.get("operator_action") is None:
+            return step
+    return None
+
+
+async def _get_pending_reason(session_id: str, step_id: str) -> str:
+    events = await db.get_run_events(session_id)
+    for event in reversed(events):
+        if event.get("event_type") != "awaiting_operator":
+            continue
+        payload = event.get("payload", {})
+        if payload.get("step_id") == step_id:
+            return payload.get("reason") or "Operator intervention"
+    return "Operator intervention"
 
 
 @router.post("/intervene", response_model=InterventionResponse)
@@ -34,28 +56,24 @@ async def intervene(request: InterventionRequest) -> InterventionResponse:
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Record the approval action
-    # Get pending approvals for this session
-    approvals = await db.get_approvals(request.session_id)
-    pending = [a for a in approvals if a.get("operator_action") is None]
-
-    if not pending:
+    pending_step = await _get_pending_step(request.session_id)
+    if not pending_step:
         raise HTTPException(status_code=409, detail="No pending approval for this session")
 
-    latest = pending[-1]
+    step_id = pending_step["id"]
+    reason = await _get_pending_reason(request.session_id, step_id)
 
     await db.record_approval(
         session_id=request.session_id,
-        step_id=latest.get("step_id", "unknown"),
+        step_id=step_id,
         action=request.action,
-        reason=latest.get("reason", "Operator intervention"),
+        reason=reason,
         override_text=request.override_text,
     )
 
     # Resume the graph by updating the step and session state
     try:
         # Update the step with operator action
-        step_id = latest.get("step_id", "unknown")
         await db.update_step(step_id, operator_action=request.action)
 
         if request.action == "abort":
@@ -69,6 +87,9 @@ async def intervene(request: InterventionRequest) -> InterventionResponse:
     except Exception as exc:
         logger.exception("Failed to apply intervention for session %s", request.session_id)
         raise HTTPException(status_code=500, detail=f"Intervention failed: {exc}")
+
+    if request.action in {"approve", "override", "skip", "request_replan"}:
+        _enqueue_run(request.session_id, session.get("task_description", "Pending task description"))
 
     return InterventionResponse(
         session_id=request.session_id,

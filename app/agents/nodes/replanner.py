@@ -6,6 +6,7 @@ Only the unfinished suffix of the plan is rewritten.
 
 from __future__ import annotations
 
+import asyncio
 from uuid import uuid4
 
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -74,7 +75,10 @@ async def replanner_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.2)
 
     try:
-        plan = await invoke_structured(llm, PlanSchema, messages)
+        plan = await asyncio.wait_for(
+            invoke_structured(llm, PlanSchema, messages),
+            timeout=35,
+        )
         new_steps = plan.steps
     except Exception as exc:
         logger.error("Replanning failed: %s", exc)
@@ -86,7 +90,9 @@ async def replanner_node(state: AgentState) -> dict:
 
     # Renumber and assign IDs
     for i, step in enumerate(new_steps):
-        step.step_id = f"step_{len(completed_steps) + i + 1}_r{state.replan_count + 1}"
+        step.step_id = (
+            f"{state.session_id}_step_{len(completed_steps) + i + 1}_r{state.replan_count + 1}"
+        )
         step.order = len(completed_steps) + i + 1
         step.status = "pending"
 

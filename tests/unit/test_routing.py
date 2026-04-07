@@ -31,6 +31,13 @@ def test_route_from_intake_resume():
     assert route_from_intake(state) == "evidence_router"
 
 
+def test_route_from_intake_resume_first_step():
+    from app.agents.routing import route_from_intake
+    step = ExecutionStep(step_id="s1", order=1, title="T", objective="O")
+    state = _make_state(current_step_index=0, steps=[step])
+    assert route_from_intake(state) == "evidence_router"
+
+
 def test_route_from_intake_replan():
     from app.agents.routing import route_from_intake
     state = _make_state(status="replanning")

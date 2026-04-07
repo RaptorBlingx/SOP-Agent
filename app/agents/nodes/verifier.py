@@ -7,6 +7,7 @@ Temperature 0.0 — fully deterministic.
 
 from __future__ import annotations
 
+import asyncio
 from langchain_core.messages import SystemMessage, HumanMessage
 
 from app.agents.state import AgentState, VerificationDecision
@@ -81,7 +82,10 @@ async def verifier_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.0)
 
     try:
-        decision = await invoke_structured(llm, VerificationDecision, messages)
+        decision = await asyncio.wait_for(
+            invoke_structured(llm, VerificationDecision, messages),
+            timeout=35,
+        )
     except Exception as exc:
         logger.error("Verification failed for step %d: %s", step.order, exc)
         # Safe fallback: require approval

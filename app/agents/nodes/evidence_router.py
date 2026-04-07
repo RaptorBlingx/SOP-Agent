@@ -18,6 +18,17 @@ from app.core import database as db
 logger = get_logger("agents.nodes.evidence_router")
 
 
+def _coerce_page_number(value) -> int | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, int):
+        return value
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 async def evidence_router_node(state: AgentState) -> dict:
     """Retrieve evidence for the current step using hybrid retrieval."""
     if state.current_step_index >= len(state.steps):
@@ -70,7 +81,7 @@ async def evidence_router_node(state: AgentState) -> dict:
             chunk_id=hit.get("chunk_id", ""),
             source_file=metadata.get("source_file", hit.get("source_file", "unknown")),
             section_path=metadata.get("section_path", hit.get("section_path")),
-            page_number=metadata.get("page_number", hit.get("page_number")),
+            page_number=_coerce_page_number(metadata.get("page_number", hit.get("page_number"))),
             quote=hit.get("content", "")[:500],
             score=hit.get("rrf_score", hit.get("score", 0.0)),
         ))

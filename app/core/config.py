@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     # --- Application ---
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:8501,http://localhost:3000"
+    llm_timeout_seconds: int = 30
 
     # --- Rate Limiting ---
     rate_limit_rpm: int = 60

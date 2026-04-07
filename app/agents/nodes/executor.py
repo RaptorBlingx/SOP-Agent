@@ -8,6 +8,7 @@ Temperature 0.1.
 
 from __future__ import annotations
 
+import asyncio
 from langchain_core.messages import SystemMessage, HumanMessage
 
 from app.agents.state import AgentState, ExecutionDecision
@@ -66,7 +67,10 @@ async def executor_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.1)
 
     try:
-        decision = await invoke_structured(llm, ExecutionDecision, messages)
+        decision = await asyncio.wait_for(
+            invoke_structured(llm, ExecutionDecision, messages),
+            timeout=35,
+        )
     except Exception as exc:
         logger.error("Executor failed for step %d: %s", step.order, exc)
         decision = ExecutionDecision(

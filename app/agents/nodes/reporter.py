@@ -6,6 +6,7 @@ replans, and unresolved exceptions. Temperature 0.3.
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -94,7 +95,10 @@ async def reporter_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.3)
 
     try:
-        response = await call_llm_with_retry(llm, messages)
+        response = await asyncio.wait_for(
+            call_llm_with_retry(llm, messages),
+            timeout=35,
+        )
         report_content = response.content if hasattr(response, 'content') else str(response)
     except Exception as exc:
         logger.warning("LLM report generation failed: %s — using template", exc)

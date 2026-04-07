@@ -20,8 +20,8 @@ def route_from_intake(state: AgentState) -> str:
         logger.info("Intake routing → replanner (resume with replan)")
         return "replanner"
 
-    if state.current_step_index > 0 and state.steps:
-        # Resuming a session — go straight to evidence for current step
+    if state.steps:
+        # Resuming a session — go straight to evidence for the current step
         logger.info("Intake routing → evidence_router (resuming step %d)", state.current_step_index)
         return "evidence_router"
 

@@ -133,7 +133,10 @@ async def call_llm_with_retry(llm: BaseChatModel, messages: list) -> Any:
     provider = settings.model_provider.lower()
     sem = _get_semaphore(provider)
     async with sem:
-        return await llm.ainvoke(messages)
+        return await asyncio.wait_for(
+            llm.ainvoke(messages),
+            timeout=settings.llm_timeout_seconds,
+        )
 
 
 # ---------------------------------------------------------------------------

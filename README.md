@@ -329,6 +329,7 @@ The Streamlit-based Operator Console provides a 4-phase workflow:
 ### Phase 2: Enter Task
 - Describe the SOP task in natural language
 - Example: *"Execute the employee onboarding procedure for a new software engineer starting Monday"*
+- If you have extra context, put it in the same text box under the main request. There are no additional required text fields at this stage.
 - Click **Start Execution**
 
 ### Phase 3: Monitor & Approve
@@ -350,6 +351,68 @@ The Streamlit-based Operator Console provides a 4-phase workflow:
 - Backend health indicator
 - Recent sessions list (click to restore)
 - Session ID and current phase
+
+### Suggested Test Prompts
+
+For the included sample SOPs, these task descriptions are good starting points:
+
+#### `samples/coffee_shop_opening_sop.md`
+
+Use this in the task box:
+
+```text
+Walk me through opening the coffee shop using this SOP, step by step, including safety checks and escalation points.
+```
+
+If you want to add extra context, append it in the same box, for example:
+
+```text
+Walk me through opening the coffee shop using this SOP, step by step, including safety checks and escalation points.
+
+Extra context:
+- I want a checklist-style answer.
+- Highlight anything that would block opening the store.
+```
+
+Expected flow on the current build:
+- Upload succeeds and indexes about 4 chunks
+- Execution moves from `planning` to `executing`
+- The run will likely pause in `awaiting_operator`
+- Click **Approve** to let it finish and generate the report
+
+#### `samples/customer_data_incident_response_sop.md`
+
+Use this in the task box:
+
+```text
+Respond to a suspected customer data exposure caused by a publicly accessible storage location and determine the approved containment and communication actions.
+```
+
+If you want to add extra context, append it in the same box, for example:
+
+```text
+Respond to a suspected customer data exposure caused by a publicly accessible storage location and determine the approved containment and communication actions.
+
+Extra context:
+- Treat this as a high-priority incident.
+- Focus on containment, evidence preservation, approvals, and notification decisions.
+```
+
+Expected flow on the current build:
+- Upload succeeds and indexes about 39 chunks
+- Execution moves from `planning` to `executing`
+- The run will likely pause in `awaiting_operator` because the SOP contains approval-gated, high-stakes actions
+- Click **Approve** to resume and finish the report
+
+#### When To Use The Override Field
+
+The `Override instruction` field is only for cases where you do **not** want to click **Approve** and instead want to steer the run manually.
+
+Example override text:
+
+```text
+Continue, but do not assume customer notification is approved. Stop after listing the required approvals and evidence to collect.
+```
 
 ---
 

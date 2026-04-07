@@ -6,6 +6,7 @@ Uses structured output (PlanSchema). Temperature 0.2.
 
 from __future__ import annotations
 
+import asyncio
 from uuid import uuid4
 
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -65,14 +66,17 @@ async def planner_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.2)
 
     try:
-        plan = await invoke_structured(llm, PlanSchema, messages)
+        plan = await asyncio.wait_for(
+            invoke_structured(llm, PlanSchema, messages),
+            timeout=35,
+        )
         steps = plan.steps
     except Exception as exc:
         logger.error("Planning failed: %s", exc)
         # Fallback: create a single exploratory step
         steps = [
             ExecutionStep(
-                step_id="step_1",
+                step_id=f"{state.session_id}_step_1",
                 order=1,
                 title="Review task requirements",
                 objective=f"Analyze the task: {state.task_description}",
@@ -83,7 +87,7 @@ async def planner_node(state: AgentState) -> dict:
 
     # Ensure step IDs and ordering are correct
     for i, step in enumerate(steps):
-        step.step_id = step.step_id or f"step_{i+1}"
+        step.step_id = f"{state.session_id}_step_{i+1}"
         step.order = i + 1
         step.status = "pending"
 

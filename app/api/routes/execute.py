@@ -14,7 +14,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from app.api.schemas import ExecuteRequest, ExecuteResponse
 from app.agents.graph import build_graph
-from app.agents.state import AgentState, ExecutionStep
+from app.agents.state import ExecutionStep
 from app.core import database as db
 from app.core.logging import get_logger
 
@@ -24,12 +24,40 @@ router = APIRouter(prefix="/api/v1")
 
 # In-memory event queues per session for SSE streaming
 _event_queues: dict[str, asyncio.Queue] = {}
+_background_tasks: set[asyncio.Task] = set()
 
 
 def _get_queue(session_id: str) -> asyncio.Queue:
     if session_id not in _event_queues:
         _event_queues[session_id] = asyncio.Queue()
     return _event_queues[session_id]
+
+
+def _enqueue_run(session_id: str, task_description: str) -> None:
+    queue = _get_queue(session_id)
+    task = asyncio.create_task(_run_graph(session_id, task_description, queue))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+
+
+def _hydrate_steps(step_rows: list[dict]) -> list[ExecutionStep]:
+    return [
+        ExecutionStep(
+            step_id=row["id"],
+            order=row["step_order"],
+            title=row["title"],
+            objective=row["objective"],
+            branch_condition=row.get("branch_condition"),
+            risk_level=row.get("risk_level", "low"),
+            requires_approval=bool(row.get("requires_approval")),
+            status=row.get("status", "pending"),
+            recommended_action=row.get("recommended_action"),
+            verification_summary=row.get("verification_summary"),
+            confidence=row.get("confidence"),
+            operator_action=row.get("operator_action"),
+        )
+        for row in step_rows
+    ]
 
 
 @router.post("/execute", response_model=ExecuteResponse)
@@ -39,6 +67,13 @@ async def start_execution(request: ExecuteRequest) -> ExecuteResponse:
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    if session["status"] == "awaiting_operator":
+        return ExecuteResponse(
+            session_id=request.session_id,
+            status=session["status"],
+            message="Session is awaiting operator action",
+        )
+
     if session["status"] in ("executing", "completed"):
         return ExecuteResponse(
             session_id=request.session_id,
@@ -46,12 +81,7 @@ async def start_execution(request: ExecuteRequest) -> ExecuteResponse:
             message=f"Session already {session['status']}",
         )
 
-    queue = _get_queue(request.session_id)
-
-    # Run graph in background task
-    asyncio.create_task(
-        _run_graph(request.session_id, request.task_description, queue)
-    )
+    _enqueue_run(request.session_id, request.task_description)
 
     return ExecuteResponse(
         session_id=request.session_id,
@@ -93,9 +123,9 @@ async def _run_graph(session_id: str, task_description: str, queue: asyncio.Queu
         initial_state: dict = {
             "session_id": session_id,
             "task_description": task_description,
-            "status": "executing",
+            "status": session.get("status", "executing") if session else "executing",
             "messages": [],
-            "steps": [],
+            "steps": _hydrate_steps(existing_steps),
             "current_step_index": resume_index,
             "active_evidence_pack": [],
             "pending_approval": None,
@@ -109,6 +139,9 @@ async def _run_graph(session_id: str, task_description: str, queue: asyncio.Queu
 
         async for event in graph.astream(initial_state, config=config):
             for node_name, node_output in event.items():
+                if not isinstance(node_output, dict):
+                    continue
+
                 evt = {
                     "node": node_name,
                     "status": node_output.get("status", ""),
@@ -118,9 +151,12 @@ async def _run_graph(session_id: str, task_description: str, queue: asyncio.Queu
 
                 # Check if waiting for approval
                 if node_output.get("pending_approval") is not None:
+                    pending_approval = node_output["pending_approval"]
+                    if hasattr(pending_approval, "model_dump"):
+                        pending_approval = pending_approval.model_dump()
                     await queue.put({
                         "event": "approval_needed",
-                        "data": json.dumps(node_output["pending_approval"]),
+                        "data": json.dumps(pending_approval),
                     })
 
         # Signal completion
@@ -128,6 +164,8 @@ async def _run_graph(session_id: str, task_description: str, queue: asyncio.Queu
 
     except Exception as exc:
         logger.exception("Graph execution failed for session %s", session_id)
+        await db.update_session(session_id, status="failed")
+        await db.add_run_event(session_id, "run_failed", {"detail": str(exc)})
         await queue.put({
             "event": "error",
             "data": json.dumps({"detail": str(exc)}),

@@ -63,12 +63,18 @@ with st.sidebar:
         from frontend.utils.api_client import list_sessions
         sessions = list_sessions()
         for s in sessions[:5]:
-            status_icon = {"completed": "✅", "executing": "⚙️", "failed": "❌"}.get(s["status"], "⬜")
+            status_icon = {
+                "completed": "✅",
+                "executing": "⚙️",
+                "awaiting_operator": "🟡",
+                "replanning": "🔄",
+                "failed": "❌",
+            }.get(s["status"], "⬜")
             if st.button(f"{status_icon} {s['session_id'][:8]}...", key=f"sess_{s['session_id']}"):
                 st.session_state["session_id"] = s["session_id"]
                 if s["status"] == "completed":
                     st.session_state["phase"] = "complete"
-                elif s["status"] == "executing":
+                elif s["status"] in ("executing", "awaiting_operator", "replanning"):
                     st.session_state["phase"] = "executing"
                 else:
                     st.session_state["phase"] = "task"
