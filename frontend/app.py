@@ -9,7 +9,15 @@ Streamlit frontend with 4 phases:
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import streamlit as st
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from frontend.utils.api_client import DEFAULT_API_URL
 
 st.set_page_config(

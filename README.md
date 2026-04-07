@@ -224,7 +224,7 @@ Or use a local Ollama instance (no API key needed):
 MODEL_PROVIDER=ollama
 EMBEDDING_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:8b
+OLLAMA_MODEL=qwen3.5:9b
 OLLAMA_EMBED_MODEL=nomic-embed-text
 ```
 
@@ -268,7 +268,7 @@ All configuration is driven by environment variables (loaded from `.env`):
 | `ANTHROPIC_API_KEY` | — | Anthropic API key |
 | `ANTHROPIC_MODEL` | `claude-sonnet-4-6` | Anthropic chat model name |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
-| `OLLAMA_MODEL` | `qwen3:8b` | Ollama chat model |
+| `OLLAMA_MODEL` | `qwen3.5:9b` | Ollama chat model |
 | `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Ollama embedding model |
 | `DATABASE_PATH` | `./data/sop_agent.db` | SQLite database file path |
 | `CHROMADB_PATH` | `./data/chromadb` | ChromaDB persistence directory |

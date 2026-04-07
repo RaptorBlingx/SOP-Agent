@@ -282,14 +282,14 @@ ANTHROPIC_MODEL=claude-sonnet-4-6
 MODEL_PROVIDER=ollama
 EMBEDDING_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:8b
+OLLAMA_MODEL=qwen3.5:9b
 OLLAMA_EMBED_MODEL=nomic-embed-text
 ```
 
 Ensure Ollama is running and models are pulled:
 ```bash
 ollama serve &
-ollama pull qwen3:8b
+ollama pull qwen3.5:9b
 ollama pull nomic-embed-text
 ```
 
