@@ -6,13 +6,30 @@ import os
 import httpx
 from typing import Any, AsyncGenerator
 
-# Default backend URL — override via BACKEND_URL env var for Codespaces/remote deployments
-DEFAULT_API_URL = os.environ.get("BACKEND_URL", "http://localhost:8000")
+LOCAL_API_URL = "http://localhost:8000"
+
+# Default backend URL — Streamlit runs server-side, so localhost is preferred in Codespaces.
+DEFAULT_API_URL = os.environ.get("BACKEND_URL", LOCAL_API_URL)
+
+
+def _normalize_api_url(url: str) -> str:
+    """Prefer localhost for server-side Streamlit calls inside GitHub Codespaces."""
+    if os.environ.get("CODESPACES", "").lower() == "true" and ".app.github.dev" in url:
+        return LOCAL_API_URL
+    return url
+
+
+def get_display_api_url() -> str:
+    import streamlit as st
+
+    configured = st.session_state.get("api_url", DEFAULT_API_URL)
+    return _normalize_api_url(configured)
 
 
 def get_api_url() -> str:
     import streamlit as st
-    return st.session_state.get("api_url", DEFAULT_API_URL)
+    configured = st.session_state.get("api_url", DEFAULT_API_URL)
+    return _normalize_api_url(configured)
 
 
 def sync_client() -> httpx.Client:

@@ -9,6 +9,7 @@ Streamlit frontend with 4 phases:
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -18,7 +19,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from frontend.utils.api_client import DEFAULT_API_URL
+from frontend.utils.api_client import LOCAL_API_URL, get_display_api_url
 
 st.set_page_config(
     page_title="SOP Agent Console",
@@ -32,7 +33,14 @@ with st.sidebar:
     st.title("📋 SOP Agent")
     st.caption("v1.2.0 — AI-powered SOP Execution")
 
-    api_url = st.text_input("API URL", value=DEFAULT_API_URL, key="api_url")
+    if "api_url" not in st.session_state:
+        st.session_state["api_url"] = get_display_api_url()
+    elif os.environ.get("CODESPACES", "").lower() == "true" and ".app.github.dev" in st.session_state["api_url"]:
+        st.session_state["api_url"] = LOCAL_API_URL
+
+    api_url = st.text_input("API URL", key="api_url")
+    if os.environ.get("CODESPACES", "").lower() == "true":
+        st.caption("In GitHub Codespaces, the Streamlit server should use http://localhost:8000 to reach the backend.")
     st.divider()
 
     # Backend health check
