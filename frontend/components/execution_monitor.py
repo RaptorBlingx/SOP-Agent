@@ -65,7 +65,6 @@ def render_execution_phase() -> None:
             "Execution summary",
             "A compact view of current run state and next expected operator behavior.",
         )
-        st.markdown(f"**Current status**")
         render_status_badge(status)
         st.markdown("")
         st.markdown(

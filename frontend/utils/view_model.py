@@ -56,7 +56,7 @@ STATUS_META: dict[str, dict[str, str]] = {
 UNKNOWN_STATUS_META = {"label": "Unknown", "tone": "neutral"}
 
 
-def _round_up_to_tenth(value: float) -> float:
+def _ceil_to_one_decimal(value: float) -> float:
     """Round a float up to one decimal place."""
     return ceil(value * 10) / 10
 
@@ -90,8 +90,8 @@ def format_file_size(size_bytes: int | None) -> str:
     if size < 1024:
         return f"{size} B"
     if size < 1024 * 1024:
-        return f"{_round_up_to_tenth(size / 1024):.1f} KB"
-    return f"{_round_up_to_tenth(size / (1024 * 1024)):.1f} MB"
+        return f"{_ceil_to_one_decimal(size / 1024):.1f} KB"
+    return f"{_ceil_to_one_decimal(size / (1024 * 1024)):.1f} MB"
 
 
 def build_file_inventory(files: list[Any]) -> list[dict[str, str]]:

@@ -74,6 +74,7 @@ def render_upload_phase() -> None:
                     st.success(
                         f"Ingested {len(result['files_processed'])} file(s) — "
                         + format_chunk_summary(result["total_chunks"])
+                        + "."
                     )
                     st.rerun()
                 except Exception as exc:
