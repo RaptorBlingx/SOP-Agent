@@ -53,7 +53,7 @@ def render_task_phase() -> None:
                 "Start execution",
                 type="primary",
                 use_container_width=True,
-                disabled=not bool(task.strip()),
+                disabled=not task.strip(),
             ):
                 with st.spinner("Starting execution..."):
                     try:

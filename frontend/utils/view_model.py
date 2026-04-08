@@ -53,6 +53,7 @@ STATUS_META: dict[str, dict[str, str]] = {
     "failed": {"label": "Failed", "tone": "danger"},
     "deleted": {"label": "Deleted", "tone": "neutral"},
 }
+UNKNOWN_STATUS_META = {"label": "Unknown", "tone": "neutral"}
 
 
 def _round_up_to_tenth(value: float) -> float:
@@ -112,7 +113,7 @@ def build_file_inventory(files: list[Any]) -> list[dict[str, str]]:
 def get_status_meta(status: str | None) -> dict[str, str]:
     """Return a status descriptor with safe defaults."""
     if not status:
-        return {"label": "Unknown", "tone": "neutral"}
+        return UNKNOWN_STATUS_META
     return STATUS_META.get(status, {"label": status.replace("_", " ").title(), "tone": "neutral"})
 
 

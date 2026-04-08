@@ -120,7 +120,7 @@ def render_execution_phase() -> None:
         if st.button(
             "Apply override",
             use_container_width=True,
-            disabled=not approval_enabled or not bool(override.strip()),
+            disabled=not approval_enabled or not override.strip(),
         ):
             _send_action(session_id, "override", override)
 
