@@ -44,6 +44,7 @@ def test_formatting_helpers_for_session_chunks_and_files() -> None:
 
     assert format_session_label("1234567890") == "12345678…"
     assert format_chunk_summary(1) == "1 chunk indexed"
+    assert format_chunk_summary(2) == "2 chunks indexed"
     assert format_file_size(2048) == "2.0 KB"
     assert inventory == [
         {"name": "handbook.pdf", "type": "PDF", "size": "2.0 KB"},

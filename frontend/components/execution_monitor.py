@@ -30,6 +30,7 @@ def render_execution_phase() -> None:
     status = session.get("status", "unknown")
     total_steps = session.get("total_steps", 0)
     current_step = session.get("current_step_index", 0)
+    display_total_steps = max(total_steps, 1)
     progress = calculate_progress(current_step, total_steps)
     status_meta = get_status_meta(status)
 
@@ -56,7 +57,7 @@ def render_execution_phase() -> None:
 
     metric_col1, metric_col2, metric_col3 = st.columns(3)
     metric_col1.metric("Status", status_meta["label"])
-    metric_col2.metric("Steps", f"{current_step}/{max(total_steps, 1)}")
+    metric_col2.metric("Steps", f"{current_step}/{display_total_steps}")
     metric_col3.metric("Progress", f"{progress}%")
     st.progress(progress / 100)
 

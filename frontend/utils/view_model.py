@@ -84,8 +84,8 @@ def format_file_size(size_bytes: int | None) -> str:
     if size < 1024:
         return f"{size} B"
     if size < 1024 * 1024:
-        return f"{ceil(size / 102.4) / 10:.1f} KB"
-    return f"{ceil(size / 104857.6) / 10:.1f} MB"
+        return f"{ceil((size / 1024) * 10) / 10:.1f} KB"
+    return f"{ceil((size / (1024 * 1024)) * 10) / 10:.1f} MB"
 
 
 def build_file_inventory(files: list[Any]) -> list[dict[str, str]]:
