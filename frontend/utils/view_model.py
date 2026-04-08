@@ -55,6 +55,11 @@ STATUS_META: dict[str, dict[str, str]] = {
 }
 
 
+def _round_up_to_tenth(value: float) -> float:
+    """Round a float up to one decimal place."""
+    return ceil(value * 10) / 10
+
+
 def calculate_progress(current_step: int, total_steps: int) -> int:
     """Return a user-facing progress percentage clamped to 0-100."""
     total = max(total_steps, 1)
@@ -84,8 +89,8 @@ def format_file_size(size_bytes: int | None) -> str:
     if size < 1024:
         return f"{size} B"
     if size < 1024 * 1024:
-        return f"{ceil((size / 1024) * 10) / 10:.1f} KB"
-    return f"{ceil((size / (1024 * 1024)) * 10) / 10:.1f} MB"
+        return f"{_round_up_to_tenth(size / 1024):.1f} KB"
+    return f"{_round_up_to_tenth(size / (1024 * 1024)):.1f} MB"
 
 
 def build_file_inventory(files: list[Any]) -> list[dict[str, str]]:

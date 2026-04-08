@@ -12,11 +12,7 @@ from frontend.utils.view_model import calculate_progress, can_intervene, format_
 def render_execution_phase() -> None:
     """Render the execution monitoring view."""
     session_id = st.session_state.get("session_id", "")
-    session: dict = {
-        "status": "unknown",
-        "total_steps": 0,
-        "current_step_index": 0,
-    }
+    session: dict | None = None
 
     # Check current state
     try:
@@ -27,6 +23,7 @@ def render_execution_phase() -> None:
     except Exception as exc:
         st.warning(f"Could not fetch session: {exc}")
 
+    session = session or {}
     status = session.get("status", "unknown")
     total_steps = session.get("total_steps", 0)
     current_step = session.get("current_step_index", 0)

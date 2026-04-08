@@ -8,6 +8,8 @@ from frontend.components.ui import render_hero, render_note, render_section_head
 from frontend.utils.api_client import upload_files
 from frontend.utils.view_model import build_file_inventory, format_chunk_summary
 
+SUPPORTED_FILE_TYPES = ["pdf", "docx", "txt", "md"]
+
 
 def render_upload_phase() -> None:
     """Render the document upload interface."""
@@ -39,7 +41,7 @@ def render_upload_phase() -> None:
         )
         uploaded = st.file_uploader(
             "Choose files",
-            type=["pdf", "docx", "txt", "md"],
+            type=SUPPORTED_FILE_TYPES,
             accept_multiple_files=True,
             key="file_uploader",
             label_visibility="collapsed",
@@ -88,5 +90,5 @@ def render_upload_phase() -> None:
             "- Prefer one procedure per document when possible\n"
             "- Include markdown or text exports for faster parsing"
         )
-        st.metric("Supported formats", "4")
+        st.metric("Supported formats", str(len(SUPPORTED_FILE_TYPES)))
         st.metric("Recommended upload mode", "Batch")
