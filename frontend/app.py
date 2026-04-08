@@ -19,6 +19,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from frontend.components.ui import apply_theme, render_phase_stepper
 from frontend.utils.api_client import LOCAL_API_URL, get_display_api_url
 
 st.set_page_config(
@@ -27,18 +28,19 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+apply_theme()
 
 # --- Sidebar ---
 with st.sidebar:
     st.title("📋 SOP Agent")
-    st.caption("v1.2.0 — AI-powered SOP Execution")
+    st.caption("Production console for SOP-driven execution")
 
     if "api_url" not in st.session_state:
         st.session_state["api_url"] = get_display_api_url()
     elif os.environ.get("CODESPACES", "").lower() == "true" and ".app.github.dev" in st.session_state["api_url"]:
         st.session_state["api_url"] = LOCAL_API_URL
 
-    api_url = st.text_input("API URL", key="api_url")
+    st.text_input("Backend endpoint", key="api_url", help="Base URL for the FastAPI backend.")
     if os.environ.get("CODESPACES", "").lower() == "true":
         st.caption("In GitHub Codespaces, the Streamlit server should use http://localhost:8000 to reach the backend.")
     st.divider()
@@ -54,8 +56,9 @@ with st.sidebar:
 
     # Session info
     if "session_id" in st.session_state:
-        st.info(f"Session: `{st.session_state['session_id'][:8]}...`")
-        st.write(f"Phase: **{st.session_state.get('phase', 'upload')}**")
+        st.caption("Current workspace")
+        st.code(st.session_state["session_id"], language=None)
+        st.write(f"Phase: **{st.session_state.get('phase', 'upload').title()}**")
 
     # Session list
     st.subheader("Recent Sessions")
@@ -70,7 +73,8 @@ with st.sidebar:
                 "replanning": "🔄",
                 "failed": "❌",
             }.get(s["status"], "⬜")
-            if st.button(f"{status_icon} {s['session_id'][:8]}...", key=f"sess_{s['session_id']}"):
+            label = f"{status_icon} {s['session_id'][:8]} · {s['status'].replace('_', ' ')}"
+            if st.button(label, key=f"sess_{s['session_id']}", use_container_width=True):
                 st.session_state["session_id"] = s["session_id"]
                 if s["status"] == "completed":
                     st.session_state["phase"] = "complete"
@@ -88,6 +92,7 @@ if "phase" not in st.session_state:
 
 # --- Route to phase ---
 phase = st.session_state["phase"]
+render_phase_stepper(phase)
 
 if phase == "upload":
     from frontend.components.upload import render_upload_phase
